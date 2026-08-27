@@ -1,0 +1,6 @@
+{
+  "name": "EventFlow",
+  "description": "Multi-tenant SaaS platform for event registration, QR event passes, attendee management, and real-time event-day check-in.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
