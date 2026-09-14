@@ -1,23 +1,18 @@
 /**
  * Maileroo Email Service
- * Handles transactional emails via Maileroo REST API with Cloudinary hosted assets.
- * Endpoint: POST https://smtp.maileroo.com/api/v2/emails
+ * Dispatches transactional emails via Supabase Edge Function ('send-email') to Maileroo REST API.
  */
 
 import QRCode from 'qrcode';
 import { Attendee, EventItem, StaffMember } from '@/types';
 import { uploadQRCodeToCloudinary } from './cloudinary';
-
-const MAILEROO_API_KEY = import.meta.env.VITE_MAILEROO_API_KEY || '';
-const MAILEROO_PROXY_URL = '/api/maileroo';
+import { supabase } from './supabase';
 
 const FROM_EMAIL = 'noreply@2a1936634eca676b.maileroo.org';
 const FROM_NAME = 'EventFlow';
 
-/**
- * Core send helper via Maileroo API v2
- */
-async function sendEmail(payload: {
+export interface SendEmailPayload {
+  type?: 'registration_confirmation' | 'staff_invite' | 'generic';
   fromAddress: string;
   fromName: string;
   toAddress: string;
@@ -25,66 +20,57 @@ async function sendEmail(payload: {
   subject: string;
   html: string;
   plain?: string;
-}): Promise<{ success: boolean; message: string }> {
-  if (!MAILEROO_API_KEY) {
-    console.warn('[Maileroo] API key not configured. Email not sent.');
-    return { success: false, message: 'Maileroo API key not configured.' };
-  }
+}
 
-  const body = {
-    from: {
-      address: payload.fromAddress,
-      display_name: payload.fromName,
-    },
-    to: [
-      {
-        address: payload.toAddress,
-        ...(payload.toName ? { display_name: payload.toName } : {}),
+/**
+ * Core send helper via Supabase Edge Function ('send-email')
+ * Dispatches transactional emails securely server-side to prevent browser CORS failures
+ * and keep the Maileroo API key off the client.
+ */
+async function sendEmail(payload: SendEmailPayload): Promise<{ success: boolean; message: string }> {
+  try {
+    const { data, error } = await supabase.functions.invoke('send-email', {
+      body: {
+        type: payload.type || 'generic',
+        fromAddress: payload.fromAddress,
+        fromName: payload.fromName,
+        toAddress: payload.toAddress,
+        toName: payload.toName,
+        subject: payload.subject,
+        html: payload.html,
+        plain: payload.plain || '',
       },
-    ],
-    subject: payload.subject,
-    html: payload.html,
-    plain: payload.plain || '',
-  };
+    });
 
-  const headers = {
-    'Content-Type': 'application/json',
-    'X-Api-Key': MAILEROO_API_KEY,
-  };
-
-  // 1. Try via Netlify / Vite proxy first
-  const endpoints = [
-    `${MAILEROO_PROXY_URL}/emails`,
-    'https://smtp.maileroo.com/api/v2/emails',
-  ];
-
-  for (const url of endpoints) {
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(body),
-      });
-
-      const contentType = response.headers.get('content-type') || '';
-      if (response.ok && contentType.includes('application/json')) {
-        const data = await response.json();
-        if (data.success !== false) {
-          return { success: true, message: data.message || 'Email sent successfully.' };
+    if (error) {
+      let detailedMsg = error.message || 'Edge function invocation failed.';
+      try {
+        if ('context' in error && error.context) {
+          const bodyJson = await (error as any).context.json();
+          if (bodyJson?.error) {
+            detailedMsg = bodyJson.error;
+          } else if (bodyJson?.message) {
+            detailedMsg = bodyJson.message;
+          }
         }
-      } else if (!contentType.includes('application/json')) {
-        // If received HTML 404 from SPA fallback, continue to direct endpoint
-        continue;
-      } else {
-        const data = await response.json().catch(() => ({}));
-        console.error(`[Maileroo] Send failed via ${url}:`, data);
+      } catch {
+        // Fall back to error.message if context json parsing fails
       }
-    } catch (err) {
-      console.warn(`[Maileroo] Attempt failed on ${url}:`, err);
+      console.error('[Email] Supabase Edge Function error:', detailedMsg);
+      return { success: false, message: detailedMsg };
     }
-  }
 
-  return { success: false, message: 'Email delivery failed across all endpoints.' };
+    if (!data || data.success === false) {
+      const failMsg = data?.error || data?.message || 'Email delivery failed through Maileroo.';
+      console.error('[Email] Maileroo delivery failure:', failMsg);
+      return { success: false, message: failMsg };
+    }
+
+    return { success: true, message: data.message || 'Email sent successfully.' };
+  } catch (err: any) {
+    console.error('[Email] Unexpected error during sendEmail:', err);
+    return { success: false, message: err?.message || 'Failed to send email. Please try again.' };
+  }
 }
 
 /**
@@ -303,6 +289,7 @@ export async function sendRegistrationConfirmation(
   const plain = `Your Official Ticket & Entry Pass\n\nHello ${attendee.fullName},\n\nYour registration for "${event.name}" is confirmed!\n\nTicket & Entry Details:\n-----------------------------------------\nRegistration ID: ${attendee.registrationId}\nDelegate Name: ${attendee.fullName}\nTicket Type: ${attendee.ticketType || 'General Attendee'}\nDate: ${eventDate}\nTime: ${event.startTime || '09:00 AM'} - ${event.endTime || '05:00 PM'}\nVenue: ${event.venueName || 'Venue'} (${event.venueAddress || event.city || ''})\n\nView and Download Your Live QR Pass:\n${passUrl}\n\nOrganized by: ${event.organizerName || 'Event Host'}\nContact: ${event.organizerEmail || ''} ${event.organizerContact || ''}\n\nPlease present your QR pass at the entrance check-in desk for fast admission.`;
 
   return sendEmail({
+    type: 'registration_confirmation',
     fromAddress: FROM_EMAIL,
     fromName: event.name ? `${event.name}` : FROM_NAME,
     toAddress: attendee.email,
@@ -465,6 +452,7 @@ export async function sendStaffInvite(
   const plain = `Welcome ${staff.name}!\n\nYou have been invited to EventFlow for "${eventName}".\n\n=== YOUR LOGIN CREDENTIALS ===\nLogin URL: ${loginUrl}\nUsername (Email): ${staff.email}\nTemporary Password: ${tempPass}\nAccess Role: ${roleText}\nAssigned Event: ${eventName}\n\nPlease change your temporary password after logging in.\n\nEventFlow Team`;
 
   return sendEmail({
+    type: 'staff_invite',
     fromAddress: FROM_EMAIL,
     fromName: FROM_NAME,
     toAddress: staff.email,

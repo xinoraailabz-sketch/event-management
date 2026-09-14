@@ -10,7 +10,13 @@ import {
   ArrowRight,
   Share2,
   Loader2,
+  UploadCloud,
+  FileText,
+  Check,
+  X,
+  Image as ImageIcon,
 } from 'lucide-react';
+import { uploadMediaToCloudinary } from '@/lib/cloudinary';
 import { Button } from '@/components/common/Button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -53,6 +59,104 @@ export const PublicRegistrationPage: React.FC<PublicRegistrationPageProps> = ({ 
     f_delegatetype: 'General Attendee',
     f_diet: 'South Indian Vegetarian',
   });
+
+  // Track file upload states per field
+  const [fileUploadState, setFileUploadState] = useState<
+    Record<
+      string,
+      {
+        isUploading: boolean;
+        fileName?: string;
+        previewUrl?: string;
+        error?: string;
+      }
+    >
+  >({});
+
+  const handleFileUpload = async (fieldId: string, file: File) => {
+    // Validate size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      addToast({
+        type: 'error',
+        title: 'File Too Large',
+        description: 'Please upload a file smaller than 10MB.',
+      });
+      return;
+    }
+
+    const isImage = file.type.startsWith('image/');
+    const localPreview = isImage ? URL.createObjectURL(file) : undefined;
+
+    setFileUploadState((prev) => ({
+      ...prev,
+      [fieldId]: {
+        isUploading: true,
+        fileName: file.name,
+        previewUrl: localPreview,
+      },
+    }));
+
+    try {
+      const secureUrl = await uploadMediaToCloudinary(
+        file,
+        'eventflow_attendee_uploads',
+        `att_${event?.slug || 'file'}`
+      );
+
+      if (secureUrl) {
+        setFormData((prev) => ({
+          ...prev,
+          [fieldId]: secureUrl,
+          ...(isImage && !prev.avatarUrl ? { avatarUrl: secureUrl } : {}),
+        }));
+
+        setFileUploadState((prev) => ({
+          ...prev,
+          [fieldId]: {
+            isUploading: false,
+            fileName: file.name,
+            previewUrl: secureUrl,
+          },
+        }));
+
+        addToast({
+          type: 'success',
+          title: 'File Uploaded',
+          description: `${file.name} uploaded successfully.`,
+          duration: 3000,
+        });
+      } else {
+        throw new Error('Could not upload file to storage.');
+      }
+    } catch (err: any) {
+      console.error('File upload failed:', err);
+      setFileUploadState((prev) => ({
+        ...prev,
+        [fieldId]: {
+          isUploading: false,
+          error: 'Upload failed. Please try again.',
+        },
+      }));
+      addToast({
+        type: 'error',
+        title: 'Upload Failed',
+        description: err.message || 'Could not upload file.',
+      });
+    }
+  };
+
+  const handleClearFile = (fieldId: string) => {
+    setFormData((prev) => {
+      const copy = { ...prev };
+      delete copy[fieldId];
+      return copy;
+    });
+    setFileUploadState((prev) => {
+      const copy = { ...prev };
+      delete copy[fieldId];
+      return copy;
+    });
+  };
 
   // Find in memory or use directly fetched event
   const event =
@@ -162,9 +266,36 @@ export const PublicRegistrationPage: React.FC<PublicRegistrationPageProps> = ({ 
       return;
     }
 
+    // Validate required file fields
+    for (const f of event.fields || []) {
+      if (f.required && f.type === 'file' && !formData[f.id]) {
+        addToast({
+          type: 'warning',
+          title: 'File Required',
+          description: `Please upload a file for "${f.label}".`,
+        });
+        return;
+      }
+    }
+
+    // Check if any file upload is currently in progress
+    const isAnyUploading = Object.values(fileUploadState).some((s) => s.isUploading);
+    if (isAnyUploading) {
+      addToast({
+        type: 'info',
+        title: 'Upload in Progress',
+        description: 'Please wait for your file to finish uploading before submitting.',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      // Find any uploaded image to assign as avatarUrl if present
+      const fileField = (event.fields || []).find((f) => f.type === 'file' && formData[f.id]);
+      const uploadedFileUrl = fileField ? formData[fileField.id] : undefined;
+
       const newAttendee = await registerAttendee(
         event.id,
         {
@@ -175,6 +306,7 @@ export const PublicRegistrationPage: React.FC<PublicRegistrationPageProps> = ({ 
           jobTitle: formData.f_designation || 'Attendee',
           city: formData.f_city || event.city,
           ticketType: formData.f_delegatetype || 'General Attendee',
+          avatarUrl: uploadedFileUrl || formData.avatarUrl,
           customAnswers: formData,
         },
         event
@@ -390,7 +522,125 @@ export const PublicRegistrationPage: React.FC<PublicRegistrationPageProps> = ({ 
                       {field.label} {field.required && <span className="text-red-500">*</span>}
                     </Label>
 
-                    {field.type === 'dropdown' ? (
+                    {field.type === 'file' ? (
+                      <div className="space-y-1.5">
+                        {fileUploadState[field.id]?.previewUrl || formData[field.id] ? (
+                          <div className="p-3 bg-[#FAFAF7] border border-[#E8E5DF] rounded-2xl flex items-center justify-between gap-3 shadow-2xs">
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              {fileUploadState[field.id]?.previewUrl?.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i) ||
+                              formData[field.id]?.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i) ||
+                              fileUploadState[field.id]?.previewUrl?.startsWith('blob:') ||
+                              fileUploadState[field.id]?.previewUrl?.startsWith('data:') ? (
+                                <img
+                                  src={fileUploadState[field.id]?.previewUrl || formData[field.id]}
+                                  alt="Upload Preview"
+                                  className="w-12 h-12 object-cover rounded-xl border border-[#E8E5DF] shrink-0"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
+                                  <FileText className="w-5 h-5" />
+                                </div>
+                              )}
+                              <div className="truncate">
+                                <p className="text-xs font-bold text-[#1A1A1A] truncate">
+                                  {fileUploadState[field.id]?.fileName || 'Uploaded File'}
+                                </p>
+                                <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-semibold">
+                                  <Check className="w-3 h-3" /> Ready to submit
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleClearFile(field.id)}
+                              className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                              title="Remove file"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <label
+                            htmlFor={`upload_${field.id}`}
+                            className={`border-2 border-dashed border-[#E8E5DF] hover:border-[#C49A3C] bg-[#FAFAF7] hover:bg-amber-50/20 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer transition-all group text-center ${
+                              fileUploadState[field.id]?.isUploading ? 'pointer-events-none opacity-60' : ''
+                            }`}
+                          >
+                            <input
+                              id={`upload_${field.id}`}
+                              type="file"
+                              accept="image/*,application/pdf"
+                              disabled={isSoldOut || isSubmitting || fileUploadState[field.id]?.isUploading}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(field.id, file);
+                              }}
+                              className="hidden"
+                            />
+                            {fileUploadState[field.id]?.isUploading ? (
+                              <div className="flex flex-col items-center gap-2 py-1">
+                                <Loader2 className="w-6 h-6 animate-spin text-[#C49A3C]" />
+                                <span className="text-xs font-semibold text-[#1A1A1A]">
+                                  Uploading to secure cloud...
+                                </span>
+                              </div>
+                            ) : (
+                              <>
+                                <div className="w-10 h-10 rounded-full bg-white shadow-xs border border-[#E8E5DF] flex items-center justify-center text-[#9A9A9A] group-hover:text-[#C49A3C] group-hover:scale-110 transition-all">
+                                  <UploadCloud className="w-5 h-5" />
+                                </div>
+                                <div className="space-y-0.5">
+                                  <p className="text-xs text-[#1A1A1A]">
+                                    <span className="font-bold underline decoration-[#C49A3C] underline-offset-2">
+                                      Click to upload
+                                    </span>{' '}
+                                    or drag & drop
+                                  </p>
+                                  <p className="text-[10px] text-[#9A9A9A]">
+                                    {field.placeholder || 'Image (JPG, PNG, WEBP) or PDF up to 10MB'}
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </label>
+                        )}
+                      </div>
+                    ) : field.type === 'textarea' ? (
+                      <textarea
+                        id={field.id}
+                        disabled={isSoldOut || isSubmitting}
+                        required={field.required}
+                        placeholder={field.placeholder || `Enter ${(field.label || '').toLowerCase()}...`}
+                        value={formData[field.id] || ''}
+                        onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                        rows={3}
+                        className="w-full p-2.5 rounded-xl border border-[#E8E5DF] text-xs focus:ring-2 focus:ring-[#C49A3C] outline-none disabled:opacity-50"
+                      />
+                    ) : field.type === 'checkbox' ? (
+                      <label className="flex items-center gap-2 text-xs text-[#3A3A3A] cursor-pointer pt-1">
+                        <input
+                          type="checkbox"
+                          id={field.id}
+                          disabled={isSoldOut || isSubmitting}
+                          checked={formData[field.id] === 'true' || formData[field.id] === 'yes'}
+                          onChange={(e) =>
+                            setFormData({ ...formData, [field.id]: e.target.checked ? 'yes' : 'no' })
+                          }
+                          className="rounded text-[#1A1A1A] focus:ring-[#C49A3C]"
+                        />
+                        <span>{field.placeholder || field.label}</span>
+                      </label>
+                    ) : field.type === 'date' ? (
+                      <Input
+                        disabled={isSoldOut || isSubmitting}
+                        id={field.id}
+                        type="date"
+                        required={field.required}
+                        value={formData[field.id] || ''}
+                        onChange={(e) => setFormData({ ...formData, [field.id]: e.target.value })}
+                        className="h-10 rounded-xl disabled:opacity-50"
+                      />
+                    ) : field.type === 'dropdown' ? (
                       <Select
                         disabled={isSoldOut || isSubmitting}
                         value={formData[field.id] || ''}

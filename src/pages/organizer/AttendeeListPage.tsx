@@ -12,6 +12,8 @@ import {
   Square,
   FileSpreadsheet,
   Calendar,
+  Paperclip,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { Button } from '@/components/common/Button';
 import { PageHeader } from '@/components/common/PageHeader';
@@ -29,7 +31,7 @@ import { AttendeeDetailsDrawer } from './AttendeeDetailsDrawer';
 import { AddAttendeeModal } from './AddAttendeeModal';
 import { Attendee } from '@/types';
 import { exportToCSV } from '@/lib/utils';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export const AttendeeListPage: React.FC = () => {
   const {
@@ -363,7 +365,16 @@ export const AttendeeListPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F0EDE8]">
-                {filteredAttendees.map((att) => (
+                {filteredAttendees.map((att) => {
+                  const hasAttachments = Boolean(
+                    att.avatarUrl ||
+                    (att.customAnswers &&
+                      Object.values(att.customAnswers).some(
+                        (val) => typeof val === 'string' && (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:image/'))
+                      ))
+                  );
+
+                  return (
                   <tr key={att.id} className="hover:bg-[#FAFAF7] transition-colors">
                     <td className="py-3.5 px-4">
                       <button onClick={() => toggleSelectOne(att.id)} className="text-[#9A9A9A] hover:text-[#1A1A1A] cursor-pointer">
@@ -378,18 +389,33 @@ export const AttendeeListPage: React.FC = () => {
                     {/* Delegate Name */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8 border border-[#E8E5DF]">
+                        <Avatar className="h-8 w-8 border border-[#E8E5DF] shrink-0">
+                          {att.avatarUrl && (
+                            <AvatarImage src={att.avatarUrl} alt={att.fullName} className="object-cover" />
+                          )}
                           <AvatarFallback className="text-xs font-bold bg-[#F5EDD8] text-[#8B6914]">
                             {att.fullName.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <button
-                            onClick={() => setSelectedAttendee(att)}
-                            className="font-bold text-[#1A1A1A] hover:text-[#C49A3C] transition-colors text-left cursor-pointer"
-                          >
-                            {att.fullName}
-                          </button>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <button
+                              onClick={() => setSelectedAttendee(att)}
+                              className="font-bold text-[#1A1A1A] hover:text-[#C49A3C] transition-colors text-left cursor-pointer"
+                            >
+                              {att.fullName}
+                            </button>
+                            {hasAttachments && (
+                              <button
+                                onClick={() => setSelectedAttendee(att)}
+                                title="Has uploaded documents or images - Click to view"
+                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 hover:bg-amber-100 border border-amber-200 text-[#8B6914] text-[10px] font-medium transition-colors cursor-pointer"
+                              >
+                                <Paperclip className="w-2.5 h-2.5" />
+                                <span>File</span>
+                              </button>
+                            )}
+                          </div>
                           <p className="text-[11px] text-[#9A9A9A]">
                             {att.jobTitle ? `${att.jobTitle}, ` : ''}{att.company || 'Individual'}
                           </p>
@@ -487,7 +513,8 @@ export const AttendeeListPage: React.FC = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
+                );
+              })}
               </tbody>
             </table>
           </div>

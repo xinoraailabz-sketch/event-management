@@ -2,11 +2,7 @@
   publish = "dist"
   command = "npm run build"
 
-[[redirects]]
-  from = "/api/maileroo/*"
-  to = "https://smtp.maileroo.com/api/v2/:splat"
-  status = 200
-  force = true
+
 
 [[redirects]]
   from = "/*"

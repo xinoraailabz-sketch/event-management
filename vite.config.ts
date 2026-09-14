@@ -19,16 +19,7 @@ export default defineConfig(() => {
       hmr: process.env.DISABLE_HMR !== 'true',
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
-      // Proxy Maileroo API to bypass browser CORS restrictions.
-      // The browser calls /api/maileroo/* and Vite forwards it to smtp.maileroo.com server-side.
-      proxy: {
-        '/api/maileroo': {
-          target: 'https://smtp.maileroo.com/api/v2',
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/api\/maileroo/, ''),
-          secure: true,
-        },
-      },
+
     },
   };
 });

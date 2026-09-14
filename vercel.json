@@ -1,9 +1,6 @@
 {
   "rewrites": [
-    {
-      "source": "/api/maileroo/:match*",
-      "destination": "https://smtp.maileroo.com/api/v2/:match*"
-    },
+
     {
       "source": "/(.*)",
       "destination": "/index.html"

@@ -64,3 +64,52 @@ export async function uploadQRCodeToCloudinary(
     return '';
   }
 }
+
+/**
+ * Upload any File, Blob, or base64 data to Cloudinary and return secure HTTPS URL
+ */
+export async function uploadMediaToCloudinary(
+  fileOrBase64: File | Blob | string,
+  folder: string = 'eventflow_attendee_uploads',
+  publicIdPrefix: string = 'attendee_file'
+): Promise<string> {
+  try {
+    const timestamp = Math.round(Date.now() / 1000);
+    const cleanPrefix = publicIdPrefix.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const publicId = `${cleanPrefix}_${Date.now()}`;
+
+    // Cloudinary signature parameters in alphabetical order
+    const strToSign = `folder=${folder}&public_id=${publicId}&timestamp=${timestamp}${API_SECRET}`;
+    const signature = await generateSha1(strToSign);
+
+    const formData = new FormData();
+    formData.append('file', fileOrBase64);
+    formData.append('api_key', API_KEY);
+    formData.append('timestamp', timestamp.toString());
+    formData.append('folder', folder);
+    formData.append('public_id', publicId);
+    formData.append('signature', signature);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.secure_url) {
+      console.log('[Cloudinary] Uploaded attendee file successfully:', data.secure_url);
+      return data.secure_url;
+    }
+
+    console.warn('[Cloudinary] Upload did not return secure_url:', data);
+    return '';
+  } catch (err) {
+    console.error('[Cloudinary] Failed to upload attendee file to Cloudinary:', err);
+    return '';
+  }
+}
+
