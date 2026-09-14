@@ -27,15 +27,15 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isLoading = false,
 }) => {
   const iconMap = {
-    danger: <AlertTriangle className="w-5 h-5 text-rose-600" />,
+    danger: <AlertTriangle className="w-5 h-5 text-red-600" />,
     warning: <AlertTriangle className="w-5 h-5 text-amber-600" />,
-    primary: <Info className="w-5 h-5 text-indigo-600" />,
+    primary: <Info className="w-5 h-5 text-[#C49A3C]" />,
   };
 
   const bgMap = {
-    danger: 'bg-rose-50 border-rose-100',
+    danger: 'bg-red-50 border-red-100',
     warning: 'bg-amber-50 border-amber-100',
-    primary: 'bg-indigo-50 border-indigo-100',
+    primary: 'bg-[#F5EDD8] border-[#E8E5DF]',
   };
 
   return (
@@ -45,12 +45,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           {iconMap[variant]}
         </div>
         <div>
-          <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-          <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">{message}</p>
+          <h3 className="text-base font-bold text-[#1A1A1A]">{title}</h3>
+          <p className="text-sm text-[#6B6B6B] mt-1.5 leading-relaxed">{message}</p>
         </div>
       </div>
 
-      <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+      <div className="mt-6 flex items-center justify-end gap-3 pt-4 border-t border-[#F0EDE8]">
         <Button variant="outline" size="sm" onClick={onClose} disabled={isLoading}>
           {cancelText}
         </Button>

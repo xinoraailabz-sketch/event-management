@@ -3,6 +3,8 @@ import { cn } from '@/lib/utils';
 import { Button as ShadcnButton, buttonVariants } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
+export { buttonVariants };
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
   size?: 'sm' | 'md' | 'lg';

@@ -49,30 +49,30 @@ export const Drawer: React.FC<DrawerProps> = ({
     <div className="fixed inset-0 z-50 overflow-hidden">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/30 backdrop-blur-xs transition-opacity duration-200"
+        className="fixed inset-0 bg-[#1A1A1A]/30 backdrop-blur-xs transition-opacity duration-200"
         onClick={onClose}
       />
 
       <div className="fixed inset-y-0 right-0 flex max-w-full pl-10 pointer-events-none">
         <div
           className={cn(
-            'w-screen pointer-events-auto bg-white shadow-2xl border-l border-slate-200 flex flex-col transform transition-transform ease-in-out duration-200',
+            'w-screen pointer-events-auto bg-white shadow-[0_20px_60px_rgba(0,0,0,0.12)] border-l border-[#E8E5DF] flex flex-col transform transition-transform ease-in-out duration-200',
             widthStyles[width]
           )}
         >
           {/* Header */}
-          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div className="px-6 py-5 border-b border-[#F0EDE8] flex items-center justify-between bg-[#FAFAF7]/50">
             <div>
               {typeof title === 'string' ? (
-                <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+                <h3 className="text-base font-bold text-[#1A1A1A]">{title}</h3>
               ) : (
                 title
               )}
-              {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
+              {description && <p className="text-sm text-[#6B6B6B] mt-0.5">{description}</p>}
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 flex items-center justify-center transition-colors"
+              className="w-8 h-8 rounded-xl text-[#9A9A9A] hover:text-[#1A1A1A] hover:bg-[#F0EDE8] flex items-center justify-center transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>

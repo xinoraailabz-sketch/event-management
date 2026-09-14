@@ -1,1 +1,79 @@
 @import "tailwindcss";
+
+@layer base {
+  :root {
+    --background: 40 20% 96%;
+    --foreground: 0 0% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    --primary: 36 56% 51%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 12% 93%;
+    --secondary-foreground: 0 0% 20%;
+    --muted: 40 12% 93%;
+    --muted-foreground: 0 0% 42%;
+    --accent: 40 12% 93%;
+    --accent-foreground: 0 0% 20%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 36 12% 89%;
+    --input: 36 12% 89%;
+    --ring: 36 56% 51%;
+    --radius: 0.75rem;
+
+    /* Custom warm design tokens */
+    --warm-bg: #F5F3EE;
+    --warm-card: #FFFFFF;
+    --warm-border: #E8E5DF;
+    --warm-border-light: #F0EDE8;
+    --warm-text: #1A1A1A;
+    --warm-text-secondary: #6B6B6B;
+    --warm-text-muted: #9A9A9A;
+    --warm-accent: #C49A3C;
+    --warm-accent-hover: #B08830;
+    --warm-accent-light: #F5EDD8;
+    --warm-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    --warm-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --warm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  * {
+    border-color: var(--warm-border);
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: var(--warm-bg);
+    color: var(--warm-text);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom smooth scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(180, 175, 165, 0.35);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(160, 150, 140, 0.55);
+}
+
+/* Warm selection */
+::selection {
+  background: #F5EDD8;
+  color: #6B4A10;
+}

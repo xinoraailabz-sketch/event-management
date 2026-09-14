@@ -15,11 +15,11 @@ import {
   Check,
 } from 'lucide-react';
 import { Button } from '../../components/common/Button';
-import { mockPricingPlans } from '../../mockData/organizations';
+import { PRICING_PLANS } from '../../lib/constants';
 import { formatCurrency } from '../../lib/utils';
 
 export const LandingPage: React.FC = () => {
-  const { navigateTo } = useApp();
+  const { events, navigateTo } = useApp();
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-indigo-600 selection:text-white">
@@ -84,11 +84,11 @@ export const LandingPage: React.FC = () => {
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => navigateTo('/e/business-summit-2026')}
+                onClick={() => navigateTo(events[0] ? `/e/${events[0].slug}` : '/app/events/new')}
                 leftIcon={<Ticket className="w-4 h-4 text-indigo-600" />}
                 className="w-full sm:w-auto"
               >
-                View Live Event Registration Page
+                {events[0] ? 'View Live Event Page' : 'Create First Event'}
               </Button>
             </div>
 
@@ -218,7 +218,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {mockPricingPlans.map((plan) => (
+            {PRICING_PLANS.map((plan) => (
               <div
                 key={plan.id}
                 className={`rounded-2xl p-6 border flex flex-col justify-between bg-white ${

@@ -29,7 +29,7 @@ const TabsList = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      'inline-flex h-9 items-center justify-start rounded-lg bg-slate-100 p-1 text-slate-500 border border-slate-200/60',
+      'inline-flex h-10 items-center justify-start rounded-xl bg-[#F0EDE8] p-1 text-[#6B6B6B] border border-[#E8E5DF]/50',
       className
     )}
     {...props}
@@ -55,10 +55,10 @@ const TabsTrigger = React.forwardRef<HTMLButtonElement, TabsTriggerProps>(
         aria-selected={isSelected}
         onClick={() => context?.onValueChange(value)}
         className={cn(
-          'inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-xs font-medium ring-offset-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
+          'inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3.5 py-1.5 text-xs font-medium ring-offset-white transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C49A3C]/30 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
           isSelected
-            ? 'bg-white text-slate-900 shadow-sm font-semibold'
-            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50',
+            ? 'bg-white text-[#1A1A1A] shadow-sm font-semibold'
+            : 'text-[#6B6B6B] hover:text-[#1A1A1A] hover:bg-white/50',
           className
         )}
         {...props}
@@ -84,7 +84,7 @@ const TabsContent = React.forwardRef<HTMLDivElement, TabsContentProps>(
         ref={ref}
         role="tabpanel"
         className={cn(
-          'mt-3 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 animate-in fade-in-50 duration-150',
+          'mt-3 ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C49A3C]/30 focus-visible:ring-offset-2 animate-in fade-in-50 duration-150',
           className
         )}
         {...props}

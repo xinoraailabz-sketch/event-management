@@ -28,20 +28,20 @@ export const ToastContainer: React.FC = () => {
         <div
           key={toast.id}
           className={cn(
-            'pointer-events-auto p-4 rounded-xl border shadow-lg flex items-start gap-3 transition-all transform animate-in slide-in-from-bottom-5 duration-200',
+            'pointer-events-auto p-4 rounded-2xl border shadow-[0_8px_30px_rgba(0,0,0,0.08)] flex items-start gap-3 transition-all transform animate-in slide-in-from-bottom-5 duration-200',
             borderColors[toast.type]
           )}
         >
           <div className="mt-0.5">{icons[toast.type]}</div>
           <div className="flex-1">
-            <h4 className="text-sm font-semibold text-slate-900 leading-snug">{toast.title}</h4>
+            <h4 className="text-sm font-semibold text-[#1A1A1A] leading-snug">{toast.title}</h4>
             {toast.description && (
-              <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">{toast.description}</p>
+              <p className="text-xs text-[#6B6B6B] mt-0.5 leading-relaxed">{toast.description}</p>
             )}
           </div>
           <button
             onClick={() => removeToast(toast.id)}
-            className="text-slate-400 hover:text-slate-600 p-1 rounded-md transition-colors"
+            className="text-[#9A9A9A] hover:text-[#1A1A1A] p-1 rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>

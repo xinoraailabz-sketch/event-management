@@ -29,15 +29,15 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center p-8 md:p-12 text-center bg-white rounded-xl border border-dashed border-slate-200',
+        'flex flex-col items-center justify-center p-8 md:p-12 text-center bg-white rounded-2xl border border-dashed border-[#E8E5DF]',
         className
       )}
     >
-      <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 mb-4 shadow-2xs">
+      <div className="w-12 h-12 rounded-xl bg-[#FAFAF7] border border-[#E8E5DF] flex items-center justify-center text-[#6B6B6B] mb-4">
         {icon}
       </div>
-      <h4 className="text-base font-semibold text-slate-900 mb-1.5">{title}</h4>
-      <p className="text-sm text-slate-500 max-w-md mb-6 leading-relaxed">{description}</p>
+      <h4 className="text-base font-bold text-[#1A1A1A] mb-1.5">{title}</h4>
+      <p className="text-sm text-[#6B6B6B] max-w-md mb-6 leading-relaxed">{description}</p>
       {(primaryAction || secondaryAction) && (
         <div className="flex flex-wrap items-center justify-center gap-3">
           {secondaryAction && (

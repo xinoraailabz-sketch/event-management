@@ -54,32 +54,32 @@ export const Modal: React.FC<ModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+        className="fixed inset-0 bg-[#1A1A1A]/30 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
       />
 
       {/* Modal Card */}
       <div
         className={cn(
-          'relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden z-10 animate-in zoom-in-95 duration-150 my-8',
+          'relative w-full bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-[#E8E5DF]/60 overflow-hidden z-10 animate-in zoom-in-95 duration-150 my-8',
           maxWidthStyles[maxWidth]
         )}
       >
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-20">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-[#F0EDE8] bg-white sticky top-0 z-20">
             <div>
               {typeof title === 'string' ? (
-                <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+                <h3 className="text-lg font-bold text-[#1A1A1A]">{title}</h3>
               ) : (
                 title
               )}
-              {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
+              {description && <p className="text-sm text-[#6B6B6B] mt-0.5">{description}</p>}
             </div>
             {showCloseButton && (
               <button
                 type="button"
                 onClick={onClose}
-                className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors focus:outline-none"
+                className="w-8 h-8 rounded-xl text-[#9A9A9A] hover:text-[#1A1A1A] hover:bg-[#F0EDE8] flex items-center justify-center transition-colors focus:outline-none cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>

@@ -1,4 +1,4 @@
-export type UserRole = 'platform_admin' | 'organizer' | 'staff';
+export type UserRole = 'admin' | 'staff' | 'organizer';
 
 export type EventStatus = 
   | 'draft' 
@@ -163,6 +163,7 @@ export interface StaffMember {
   checkInCount: number;
   avatarUrl?: string;
   loginToken?: string;
+  accessCode?: string;
 }
 
 export interface MessageCampaign {
@@ -180,6 +181,10 @@ export interface MessageCampaign {
   recipientCount?: number;
   deliveryRate?: number;
   templatePreview?: string;
+  sentCount?: number;
+  deliveredCount?: number;
+  readCount?: number;
+  passDownloadedCount?: number;
 }
 
 export interface Organization {

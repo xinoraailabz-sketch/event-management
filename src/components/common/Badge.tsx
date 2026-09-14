@@ -5,7 +5,7 @@ import { EventStatus, AttendeeStatus, UserRole } from '@/types';
 
 interface BadgeProps {
   children?: React.ReactNode;
-  variant?: 'default' | 'success' | 'warning' | 'error' | 'info' | 'purple' | 'neutral';
+  variant?: 'default' | 'success' | 'warning' | 'error' | 'info' | 'purple' | 'neutral' | 'primary';
   status?: EventStatus | AttendeeStatus | UserRole | string;
   size?: 'sm' | 'md';
   dot?: boolean;
@@ -43,7 +43,7 @@ export const Badge: React.FC<BadgeProps> = ({
         label = label || 'Registration Closed';
         break;
       case 'live':
-        resolvedVariant = 'default';
+        resolvedVariant = 'success';
         label = label || 'Live';
         break;
       case 'completed':
@@ -78,13 +78,11 @@ export const Badge: React.FC<BadgeProps> = ({
         break;
 
       // User roles
+      case 'admin':
       case 'platform_admin':
-        resolvedVariant = 'default';
-        label = label || 'Platform Admin';
-        break;
       case 'organizer':
         resolvedVariant = 'default';
-        label = label || 'Organizer';
+        label = label || 'Administrator';
         break;
       case 'staff':
       case 'check_in_staff':
@@ -111,17 +109,17 @@ export const Badge: React.FC<BadgeProps> = ({
     if (variant === 'success') resolvedVariant = 'success';
     else if (variant === 'warning') resolvedVariant = 'warning';
     else if (variant === 'error') resolvedVariant = 'destructive';
-    else if (variant === 'info' || variant === 'purple') resolvedVariant = 'default';
+    else if (variant === 'info' || variant === 'purple' || variant === 'primary') resolvedVariant = 'default';
     else if (variant === 'neutral') resolvedVariant = 'secondary';
   }
 
   const dotColors: Record<string, string> = {
-    default: 'bg-blue-600',
-    secondary: 'bg-slate-400',
+    default: 'bg-[#1A1A1A]',
+    secondary: 'bg-[#9A9A9A]',
     success: 'bg-emerald-600',
     warning: 'bg-amber-600',
-    destructive: 'bg-rose-600',
-    outline: 'bg-slate-400',
+    destructive: 'bg-red-600',
+    outline: 'bg-[#9A9A9A]',
   };
 
   return (
@@ -129,7 +127,7 @@ export const Badge: React.FC<BadgeProps> = ({
       variant={resolvedVariant}
       className={cn(
         'gap-1.5 font-medium select-none',
-        size === 'sm' ? 'text-[11px] px-2 py-0.5' : 'text-xs px-2.5 py-1',
+        size === 'sm' ? 'text-[11px] px-2.5 py-0.5' : 'text-xs px-3 py-1',
         className
       )}
     >
@@ -137,7 +135,7 @@ export const Badge: React.FC<BadgeProps> = ({
         <span
           className={cn(
             'w-1.5 h-1.5 rounded-full shrink-0',
-            dotColors[resolvedVariant] || 'bg-blue-600'
+            dotColors[resolvedVariant] || 'bg-[#1A1A1A]'
           )}
         />
       )}
